@@ -1,0 +1,42 @@
+.upload-traits-wrap {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.upload-area-wrap {
+  width: 100%;
+}
+
+.upload-area {
+  width: 100%;
+  min-height: 200px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.upload-area:hover {
+  border-color: #999;
+  background-color: #f0f1f2;
+}
+
+.upload-area.drag-over {
+  border-color: #4a90e2;
+  background-color: #e3f2fd;
+  color: #4a90e2;
+} 

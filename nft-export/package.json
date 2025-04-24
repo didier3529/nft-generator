@@ -1,0 +1,47 @@
+{
+  "name": "nft-export",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@nextui-org/react": "^2.6.11",
+    "@react-pdf/renderer": "^4.3.0",
+    "@sentry/nextjs": "^9.13.0",
+    "@tailwindcss/forms": "^0.5.10",
+    "browser-image-compression": "^2.0.2",
+    "ethers": "^6.13.5",
+    "file-saver": "^2.0.5",
+    "framer-motion": "^12.7.4",
+    "jszip": "^3.10.1",
+    "konva": "^9.3.20",
+    "next": "15.3.1",
+    "next-i18next": "^15.4.2",
+    "next-intl": "^4.0.3",
+    "next-pwa": "^5.6.0",
+    "next-themes": "^0.4.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-dropzone": "^14.3.8",
+    "react-icons": "^5.5.0",
+    "react-konva": "^19.0.3",
+    "sentry": "^0.1.2",
+    "viem": "^2.28.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
