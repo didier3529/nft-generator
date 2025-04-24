@@ -44,7 +44,7 @@ A comprehensive application for creating, customizing, and exporting NFT collect
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/nft-generator.git
+   git clone https://github.com/didier3529/nft-generator.git
    cd nft-generator
    ```
 

@@ -47,4 +47,7 @@ testEnv.js
 # Task Master specific
 .cursor/
 tasks.json
-tasks/ 
+tasks/
+
+# Security - API Keys
+mcp.json 
