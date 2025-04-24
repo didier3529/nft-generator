@@ -1,0 +1,192 @@
+<context>
+# Overview  
+NFT Export is a web application that allows users to generate and export NFT collections. The platform makes the process of creating NFT art accessible to non-technical users by providing a layer-based generation system, similar to how artists use layers in design tools. Users can upload multiple image layers, customize traits, and generate a complete NFT collection with metadata ready for blockchain deployment.
+
+# Core Features  
+1. Layer Management System
+   - What it does: Allows users to upload, organize, and manage image layers for NFT creation
+   - Why it's important: Provides the foundation for creating varied NFTs with different visual traits
+   - How it works: Users upload image layers categorized by trait types (background, body, eyes, etc.)
+
+2. Real-time NFT Preview Canvas
+   - What it does: Shows a live preview of the generated NFT with selected traits
+   - Why it's important: Gives immediate visual feedback to users about their creation
+   - How it works: Renders layers on canvas in the proper stacking order, updating as users select different traits
+
+3. Metadata Editor
+   - What it does: Enables users to define and edit NFT metadata attributes
+   - Why it's important: Proper metadata is crucial for blockchain compatibility and marketplace representation
+   - How it works: Provides forms to input collection name, description, and trait rarity information
+
+4. Export Functionality
+   - What it does: Exports the complete NFT collection as images and metadata files
+   - Why it's important: Provides the final output needed for NFT minting
+   - How it works: Generates all trait combinations based on user settings, creates image files and corresponding JSON metadata
+
+# User Experience  
+User Personas:
+- Digital artists seeking to create NFT collections without coding knowledge
+- NFT creators who want to streamline their workflow
+- Web3 entrepreneurs launching digital collectible projects
+
+Key User Flows:
+- Onboarding: User learns about the platform capabilities
+- Layer Upload: User uploads and organizes trait images
+- Configuration: User sets up collection parameters and trait rarities
+- Preview: User views sample NFTs before generation
+- Export: User generates and downloads the complete collection
+</context>
+<PRD>
+# Technical Architecture  
+## System Components
+- Frontend: Next.js 15 application with React and TypeScript
+- State Management: Zustand for global state
+- File Handling: Client-side file processing with browser APIs
+- Image Processing: HTML Canvas for rendering and compositing layers
+- Storage: Local browser storage for saving work in progress
+
+## Data Models
+- Layer: 
+  - id: string
+  - name: string
+  - category: string
+  - imageUrl: string
+  - weight: number (for rarity)
+  - traits: { [key: string]: string } (metadata attributes)
+
+- NFT Collection:
+  - name: string
+  - description: string
+  - symbol: string
+  - baseUri: string
+  - layers: Layer[]
+  - previewNFTs: number[] (indices of combinations to show in preview)
+
+## APIs and Integrations
+- No backend required for MVP; all processing happens client-side
+- Future integration potential with IPFS for decentralized storage
+
+## Infrastructure Requirements
+- Static website hosting (Vercel/Netlify)
+- CDN for optimal image delivery
+
+# Development Roadmap  
+## MVP Requirements
+1. Core UI Framework & Navigation
+   - Basic application shell with responsive design
+   - Navigation between main sections
+
+2. Layer Management Implementation
+   - Layer upload functionality
+   - Category organization
+   - Layer reordering and deletion
+
+3. NFT Canvas Development
+   - Layer rendering system
+   - Random trait selection
+   - Manual trait selection
+
+4. Basic Metadata Configuration
+   - Collection name/description settings
+   - Simple trait attribute editing
+   - Basic rarity settings
+
+5. Export System
+   - Single NFT export functionality
+   - Collection export with basic metadata
+   - Download as ZIP archive
+
+## Future Enhancements
+1. Advanced Rarity Control
+   - Trait dependency rules
+   - Conditional probabilities
+   - Exclusion rules for incompatible traits
+
+2. Preview Gallery
+   - Multi-NFT preview gallery
+   - Filtering and sorting options
+   - Bulk editing capabilities
+
+3. Collection Management
+   - Save and load different projects
+   - Project templates
+   - Collection duplication and forking
+
+4. Integration with Blockchain
+   - Direct minting capabilities
+   - Marketplace integrations
+   - Wallet connection
+
+5. Collaboration Features
+   - Shared projects
+   - Team roles and permissions
+   - Version control
+
+# Logical Dependency Chain
+1. Foundation Components (First Priority)
+   - UI framework setup
+   - State management structure
+   - File handling utilities
+   - Canvas rendering system
+
+2. User Interface Development
+   - Layer management interface
+   - NFT preview canvas
+   - Basic controls
+   - Metadata input forms
+
+3. Core Functionality Implementation
+   - Layer processing and rendering
+   - Trait selection mechanism
+   - Random generation algorithms
+   - Metadata compilation
+
+4. Export System
+   - Image generation pipeline
+   - Metadata formatting
+   - File packaging
+   - Download mechanism
+
+5. Polish and Refinement
+   - Performance optimization
+   - UI/UX improvements
+   - Error handling
+   - Responsive design adjustments
+
+# Risks and Mitigations  
+## Technical Challenges
+- Risk: Canvas performance issues with complex layered images
+  Mitigation: Implement image optimization and caching strategies
+
+- Risk: Browser memory limitations with large collections
+  Mitigation: Batch processing for large collections, progressive loading
+
+- Risk: Inconsistent file handling across browsers
+  Mitigation: Comprehensive testing across browsers, fallback mechanisms
+
+## MVP Scope Management
+- Risk: Feature creep extending development timeline
+  Mitigation: Strict prioritization of MVP features, clearly defined phases
+
+- Risk: Usability issues in the layer management system
+  Mitigation: Early user testing with artists/creators, iterative improvements
+
+## Resource Constraints
+- Risk: Limited development resources
+  Mitigation: Focus on client-side processing to eliminate backend complexity
+
+- Risk: Image processing performance
+  Mitigation: Optimize canvas operations, use worker threads for processing
+
+# Appendix  
+## Research Findings
+- Popular NFT formats: ERC-721 and ERC-1155 standards
+- Common metadata schema: OpenSea metadata standards
+- User expectations: Simplified workflow compared to existing tools
+
+## Technical Specifications
+- Browser compatibility: Latest versions of Chrome, Firefox, Safari, Edge
+- Recommended image formats: PNG with transparency
+- Performance targets: Support collections up to 10,000 NFTs
+- Export formats: PNG images with JSON metadata
+</PRD> 
