@@ -6,47 +6,7 @@ import LayerManager from './components/LayerManager/LayerManager';
 import NftPreview from './components/NftPreview/NftPreview';
 import MetadataEditor from './components/MetadataEditor';
 import CollectionGenerator from './components/CollectionGenerator';
-
-// Error boundary to catch and display errors
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error("App error:", error, errorInfo);
-    this.setState({ error, errorInfo });
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{ padding: '20px', backgroundColor: '#ffeeee', borderRadius: '5px', margin: '20px' }}>
-          <h2>Something went wrong.</h2>
-          <details style={{ whiteSpace: 'pre-wrap' }}>
-            <summary>Show error details</summary>
-            {this.state.error && this.state.error.toString()}
-            <br />
-            {this.state.errorInfo && this.state.errorInfo.componentStack}
-          </details>
-          <button 
-            onClick={() => window.location.reload()} 
-            style={{ marginTop: '10px', padding: '5px 10px' }}
-          >
-            Reload Page
-          </button>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
+import ErrorBoundary from './components/ErrorBoundary';
 
 // NFT Generator App Component (from pages/index.jsx)
 const NFTGeneratorApp = memo(({ walletAddress }) => {
@@ -103,7 +63,9 @@ const NFTGeneratorApp = memo(({ walletAddress }) => {
       </Box>
       
       {/* Only render the active tab content */}
-      {activeTabComponent}
+      <ErrorBoundary>
+        {activeTabComponent}
+      </ErrorBoundary>
     </Container>
   );
 });

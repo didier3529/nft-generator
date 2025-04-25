@@ -116,6 +116,7 @@ const CollectionGenerator = () => {
   const { layers } = useLayerStore();
   const { traitMetadata } = useMetadataStore();
   const metadata = useMetadataStore((state) => state.metadata);
+  const updateMetadata = useMetadataStore((state) => state.updateMetadata);
   const {
     settings,
     updateSettings,
@@ -129,11 +130,10 @@ const CollectionGenerator = () => {
     getTotalNfts
   } = useGenerationStore();
   
-  // Add setMetadata function as a placeholder
+  // Add setMetadata function properly
   const setMetadata = (newMetadata) => {
     console.log('Setting metadata:', newMetadata);
-    // In a real implementation, this would update the metadata in the store
-    // e.g., useMetadataStore.getState().updateMetadata(newMetadata);
+    updateMetadata(newMetadata);
   };
   
   // Get wallet from Solana wallet adapter
