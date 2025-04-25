@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
 import './App.css';
 import SimpleWalletConnect from './components/SimpleWalletConnect';
-import { Container, Grid, Box, Typography, Tabs, Tab, Paper } from '@mui/material';
+import { Container, Box, Typography, Tabs, Tab } from '@mui/material';
 import LayerManager from './components/LayerManager/LayerManager';
 import NftPreview from './components/NftPreview/NftPreview';
 import MetadataEditor from './components/MetadataEditor';

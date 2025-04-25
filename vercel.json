@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd client && node setup-for-vercel.js && npm run build",
+  "buildCommand": "cd client && node setup-for-vercel.js && CI=false npm run build",
   "installCommand": "cd client && npm install",
   "outputDirectory": "client/build",
   "rewrites": [
