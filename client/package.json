@@ -46,10 +46,10 @@
     "zustand": "^5.0.3"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "test:wallet": "craco test test/wallet.test.js",
+    "start": "npx craco start",
+    "build": "npx craco build",
+    "test": "npx craco test",
+    "test:wallet": "npx craco test test/wallet.test.js",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

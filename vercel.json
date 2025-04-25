@@ -1,11 +1,16 @@
 {
-  "buildCommand": "cd client && npm run build",
+  "version": 2,
+  "buildCommand": "cd client && node setup-for-vercel.js && npm run build",
   "outputDirectory": "client/build",
-  "framework": "create-react-app",
-  "routes": [
-    { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/favicon.ico", "dest": "/favicon.ico" },
-    { "src": "/manifest.json", "dest": "/manifest.json" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "installCommand": "npm install",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 } 
