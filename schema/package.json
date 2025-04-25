@@ -1,0 +1,23 @@
+{
+  "name": "solana-nft-metadata-validator",
+  "version": "1.0.0",
+  "description": "Validation utilities for Solana NFT metadata",
+  "main": "validateMetadata.js",
+  "scripts": {
+    "test": "node example.js",
+    "validate": "node -e \"const { validateMetadata } = require('./validateMetadata'); const fs = require('fs'); const metadata = JSON.parse(fs.readFileSync(process.argv[1])); console.log(JSON.stringify(validateMetadata(metadata), null, 2));\""
+  },
+  "keywords": [
+    "solana",
+    "nft",
+    "metadata",
+    "validation",
+    "json-schema"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1"
+  }
+} 

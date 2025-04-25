@@ -96,6 +96,7 @@ const ExportButton = ({ canvasRef }) => {
         startIcon={<DownloadIcon />}
         onClick={handleOpen}
         disabled={!hasTraits}
+        data-export-button="true"
       >
         Export NFT
       </Button>

@@ -55,6 +55,28 @@ const MetadataEditor = () => {
     severity: 'success'
   });
 
+  // Set default description if empty when component mounts
+  useEffect(() => {
+    if (!metadata.description) {
+      const today = new Date();
+      const formattedDate = today.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const defaultDescription = `Unique 1/1 NFT generated on ${formattedDate}`;
+      
+      // Update both local state and store
+      setCollectionForm(prev => ({
+        ...prev,
+        description: defaultDescription
+      }));
+      
+      // Update the store with the default description
+      updateCollectionMetadata({ description: defaultDescription });
+    }
+  }, []);
+
   // Update local form when global state changes
   useEffect(() => {
     setCollectionForm({
@@ -230,7 +252,7 @@ const MetadataEditor = () => {
               multiline
               rows={3}
               margin="normal"
-              placeholder="A unique collection of digital art..."
+              placeholder="Unique 1/1 NFT generated on [date]"
             />
           </Grid>
           

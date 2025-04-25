@@ -189,4 +189,39 @@ Key User Flows:
 - Recommended image formats: PNG with transparency
 - Performance targets: Support collections up to 10,000 NFTs
 - Export formats: PNG images with JSON metadata
+
+# Product Requirements Document: Minimal Solana Blockchain Integration
+
+## Overview
+This document outlines the requirements for integrating basic Solana blockchain functionality into our existing NFT Generator app. The integration will be minimalistic, focusing only on essential features while maintaining the current app architecture.
+
+## Core Requirements
+- Keep code additions minimal and simple
+- Maintain anonymity
+- Don't overcomplicate the existing codebase
+- Make it legitimate but basic
+
+## Features to Implement
+1. Phantom wallet connection (simple button)
+2. "Deploy to Solana" functionality
+3. IPFS upload for NFT metadata
+4. Basic disclaimer text about speculation risks
+
+## Technical Approach
+- Install only essential packages: @solana/web3.js and @metaplex-foundation/js
+- Write approximately 20 lines for wallet connection
+- Write approximately 30 lines for deployment function
+- Create minimal UI elements for these features
+
+## Implementation Guidelines
+- No backend changes if possible
+- No user data collection
+- Users handle their own wallet connections and gas fees
+- Structure code in a modular way that doesn't disrupt existing functionality
+- Include clear comments explaining the Solana integration
+- Add all necessary disclaimers for anonymity protection
+
+## Testing Approach
+- Provide instructions for testing with minimal test data
+- Include verification steps for successful deployment
 </PRD> 

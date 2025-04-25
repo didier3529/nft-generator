@@ -1,91 +1,108 @@
-# NFT Generator
+# NFT Generator - Solana Program
 
-A comprehensive application for creating, customizing, and exporting NFT collections with layered trait attributes.
-
-## Features
-
-- **Layer Management**: Upload, organize, and categorize traits by type (Background, Body, Eyes, etc.)
-- **Canvas Preview**: Real-time preview of NFT with pan, zoom, and reset functionality
-- **Trait Selection**: UI for selecting specific traits from each category
-- **Randomization**: Generate random trait combinations
-- **Batch Export**: Generate multiple NFTs from selected traits
-- **Metadata Editor**: Customize NFT metadata configuration
-- **Collection Generator**: Create complete NFT collections with randomized traits
+This repository contains a Solana program for NFT generation and management, along with a client application for interacting with the program.
 
 ## Project Structure
 
-### Frontend (React)
-- **NftPreview**: Canvas rendering and trait selection
-- **LayerManager**: Uploading, managing, and organizing traits by category
-- **BatchExport**: Generating multiple NFTs from selected traits
-- **MetadataEditor**: Customizing NFT metadata configuration
-- **CollectionGenerator**: Creating complete NFT collections with randomized traits
-- **UploadTraits**: Bulk image uploading and categorization
-
-### Backend
-- **Layer Service**: Managing asset storage and retrieval
-- **Export Service**: Handling NFT generation and export
-
-## Technical Stack
-
-- **Frontend**: React with Material UI components
-- **State Management**: Zustand
-- **Canvas Rendering**: HTML5 Canvas API
-- **Backend**: Node.js server
-- **Asset Management**: File system-based storage
+- `/src` - Solana program code (Rust)
+- `/client` - Frontend client application
+- `/tests` - Program tests
+- `/scripts` - Deployment and utility scripts
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js
-- npm or yarn
+
+- [Solana CLI tools](https://docs.solana.com/cli/install-solana-cli-tools)
+- [Rust](https://www.rust-lang.org/tools/install) and Cargo
+- [Node.js](https://nodejs.org/) (v20.18.0 or later)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/didier3529/nft-generator.git
+   git clone https://github.com/your-username/nft-generator.git
    cd nft-generator
    ```
 
-2. Install dependencies for both client and server:
+2. Install Rust dependencies and build the Solana program:
    ```bash
-   # Install client dependencies
-   cd client
-   npm install
-   cd ..
-
-   # Install server dependencies
-   cd server
-   npm install
-   cd ..
+   cargo build-bpf
    ```
 
-3. Start the development servers:
+3. Install client dependencies:
    ```bash
-   # Start the backend server
-   cd server
-   npm start
-   
-   # In a separate terminal, start the client
    cd client
-   npm start
+   npm install
    ```
 
-4. Open http://localhost:3000 in your browser to access the application.
+## Development
 
-## Usage
+### Building the Program
 
-1. **Upload Traits**: Use the Layer Manager to upload and categorize your trait images
-2. **Preview NFTs**: Select traits to preview your NFT in the canvas
-3. **Customize**: Adjust settings, organize layers, and configure metadata
-4. **Export**: Generate individual NFTs or create collections with metadata
+```bash
+cargo build-bpf
+```
+
+### Running Tests
+
+```bash
+cargo test-bpf
+```
+
+### Running the Client
+
+```bash
+cd client
+npm run dev
+```
+
+## Deployment
+
+For detailed deployment instructions, please refer to the [Deployment Guide](DEPLOYMENT.md).
+
+The repository includes several scripts to facilitate deployment:
+
+- `solana-deploy.sh` - Interactive deployment interface
+- `deploy-devnet.sh` - Automated Devnet deployment
+- `deploy-mainnet.sh` - Guided Mainnet deployment with safety checks
+- `verify-program.sh` - Verification utility for deployed programs
+
+### Quick Start Deployment
+
+Make the scripts executable and run the deployment interface:
+
+```bash
+chmod +x *.sh
+./solana-deploy.sh
+```
+
+## Features
+
+- Generate NFTs on Solana blockchain
+- Upload metadata to IPFS via NFT.Storage
+- Mint NFTs with custom attributes
+- Manage NFT collections
+- Token transfers and marketplace integration
+
+## Testing
+
+The project includes comprehensive tests:
+
+```bash
+# Run Solana program tests
+cargo test-bpf
+
+# Run client tests
+cd client
+npm test
+```
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+[MIT License](LICENSE)
 
-## Acknowledgments
+## Contributing
 
-- Thanks to all contributors who have helped build and improve this project
-- Inspired by the growing NFT creation community 
+Contributions are welcome! Please feel free to submit a Pull Request. 

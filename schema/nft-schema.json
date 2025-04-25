@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Solana NFT Metadata Schema",
+  "description": "Schema for validating Solana NFT metadata format",
+  "type": "object",
+  "required": ["name", "symbol", "description", "image", "seller_fee_basis_points", "attributes"],
+  "properties": {
+    "name": { 
+      "type": "string", 
+      "maxLength": 32,
+      "description": "The name of the asset. Limited to 32 characters."
+    },
+    "symbol": { 
+      "type": "string", 
+      "maxLength": 10,
+      "description": "The symbol of the asset. Limited to 10 characters."
+    },
+    "description": { 
+      "type": "string",
+      "description": "Description of the asset."
+    },
+    "image": { 
+      "type": "string", 
+      "pattern": "^(https?://|ipfs://).+",
+      "description": "URL or IPFS URI pointing to the asset's image."
+    },
+    "animation_url": { 
+      "type": "string",
+      "description": "URL to a multimedia attachment for the asset."
+    },
+    "external_url": { 
+      "type": "string",
+      "description": "URL to an external website or resource about the asset."
+    },
+    "seller_fee_basis_points": { 
+      "type": "integer", 
+      "minimum": 0, 
+      "maximum": 10000,
+      "description": "Royalty percentage (in basis points, i.e., 100 = 1%)."
+    },
+    "attributes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["trait_type", "value"],
+        "properties": {
+          "trait_type": { "type": "string" },
+          "value": { 
+            "oneOf": [
+              { "type": "string" },
+              { "type": "number" },
+              { "type": "boolean" }
+            ]
+          },
+          "display_type": { "type": "string" }
+        }
+      },
+      "description": "Attributes of the asset, displayed in the NFT marketplace UI."
+    },
+    "collection": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "family": { "type": "string" }
+      },
+      "description": "Collection the NFT belongs to."
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["uri", "type"],
+            "properties": {
+              "uri": { "type": "string" },
+              "type": { "type": "string" }
+            }
+          }
+        },
+        "category": { "type": "string" },
+        "creators": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["address", "share"],
+            "properties": {
+              "address": { "type": "string", "pattern": "^[1-9A-HJ-NP-Za-km-z]{32,44}$" },
+              "share": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "verified": { "type": "boolean" }
+            }
+          }
+        }
+      },
+      "description": "Additional properties and details about the NFT."
+    }
+  }
+} 

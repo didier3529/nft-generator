@@ -1,17 +1,19 @@
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { Box, IconButton, Paper, Slider, Typography, Divider } from '@mui/material';
+import React, { useRef, useEffect, useState, useCallback, useMemo, forwardRef, useLayoutEffect } from 'react';
+import { Box, IconButton, Paper, Slider, Typography, Divider, Snackbar, Alert } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { useLayerStore } from '../../stores';
 import ExportButton from './ExportButton';
 import './nftPreview.css';
+import { debounce } from 'lodash'; // Make sure lodash is installed
 
 // Flag to control whether to use server paths or preview data URLs
 const USE_PREVIEW_DATA = true;
 
-const NftCanvas = ({ width = 500, height = 500 }) => {
-  const canvasRef = useRef(null);
+// Modified to use forwardRef to allow parent components to access the canvas
+const NftCanvas = forwardRef(({ width = 500, height = 500 }, ref) => {
+  const internalCanvasRef = useRef(null);
   const [scale, setScale] = useState(1);
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
@@ -21,20 +23,32 @@ const NftCanvas = ({ width = 500, height = 500 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [canvasUpdated, setCanvasUpdated] = useState(false);
+  const [saveNotification, setSaveNotification] = useState({ open: false, message: 'Saved!', severity: 'success' });
 
-  // Get selected layers from store using memoization with strict equality comparison
-  const selectedLayers = useLayerStore(useCallback((state) => {
-    return state.getSelectedLayers();
-  }, []), (prev, next) => {
-    // Deep equality check for selectedLayers objects
-    if (Object.keys(prev).length !== Object.keys(next).length) return false;
-    
-    for (const key of Object.keys(prev)) {
-      if (!next[key] || prev[key].id !== next[key].id) return false;
+  // Store previous render timestamp to throttle updates
+  const lastRenderTimestamp = useRef(0);
+  // Animation frame request ID for cleanup
+  const animationFrameId = useRef(null);
+  // Flag for pending updates
+  const hasPendingUpdate = useRef(false);
+
+  // Use the external ref if provided, otherwise use the internal ref
+  const canvasRef = ref || internalCanvasRef;
+
+  // Get selected layers from store using selector function with shallow equality
+  const selectedLayers = useLayerStore(
+    state => state.getSelectedLayers(),
+    (prev, next) => {
+      // Return true if they should be considered equal (preventing re-render)
+      if (Object.keys(prev).length !== Object.keys(next).length) return false;
+      
+      for (const key of Object.keys(prev)) {
+        if (!next[key] || prev[key].id !== next[key].id) return false;
+      }
+      
+      return true;
     }
-    
-    return true;
-  });
+  );
   
   // Create a stable reference to selectedLayers for use in drawCanvas
   const selectedLayersRef = useRef(selectedLayers);
@@ -42,9 +56,11 @@ const NftCanvas = ({ width = 500, height = 500 }) => {
   // Update the ref when selectedLayers changes
   useEffect(() => {
     selectedLayersRef.current = selectedLayers;
+    // Schedule a redraw when layers change
+    requestCanvasUpdate();
   }, [selectedLayers]);
   
-  // Load an image and return a Promise - this doesn't need to change with render cycles
+  // Load an image and return a Promise - memoized to maintain reference stability
   const loadImage = useCallback((url) => {
     return new Promise((resolve, reject) => {
       // Skip loading if URL is empty
@@ -64,7 +80,30 @@ const NftCanvas = ({ width = 500, height = 500 }) => {
     });
   }, []);
 
-  // Draw the canvas with all layers - memoize with stable dependencies
+  // Throttle canvas updates to prevent too many redraws
+  const requestCanvasUpdate = useCallback(() => {
+    hasPendingUpdate.current = true;
+    
+    if (!animationFrameId.current) {
+      animationFrameId.current = requestAnimationFrame(() => {
+        const now = performance.now();
+        // Only redraw if sufficient time has passed (throttling)
+        if (now - lastRenderTimestamp.current > 50 || hasPendingUpdate.current) {
+          drawCanvas();
+          lastRenderTimestamp.current = now;
+          hasPendingUpdate.current = false;
+        }
+        animationFrameId.current = null;
+        
+        // If updates are still needed, request another frame
+        if (hasPendingUpdate.current) {
+          requestCanvasUpdate();
+        }
+      });
+    }
+  }, []);
+
+  // Draw the canvas with all layers - memoized with stable dependencies
   const drawCanvas = useCallback(async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -151,48 +190,58 @@ const NftCanvas = ({ width = 500, height = 500 }) => {
       }
       
       setCanvasUpdated(true);
-      setIsLoading(false);
     } catch (err) {
       console.error('Error drawing canvas:', err);
       setError('Error drawing canvas: ' + err.message);
+    } finally {
       setIsLoading(false);
     }
     
     ctx.restore();
-  }, [scale, offsetX, offsetY, loadImage]); // Removed selectedLayers from dependencies, using ref instead
+  }, [scale, offsetX, offsetY, loadImage]);
 
-  // Initialize canvas and add event listeners
-  useEffect(() => {
+  // Initialize canvas and add event listeners using useLayoutEffect for smoother rendering
+  useLayoutEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    const handleResize = () => {
-      requestAnimationFrame(() => drawCanvas());
-    };
+    // Initial canvas draw 
+    requestCanvasUpdate();
     
-    // Draw initial canvas
-    requestAnimationFrame(() => drawCanvas());
+    // Cleanup animation frame on unmount
+    return () => {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
+  }, [requestCanvasUpdate]);
+
+  // Memoized resize handler with proper cleanup
+  useEffect(() => {
+    const handleResize = debounce(() => {
+      requestCanvasUpdate();
+    }, 100); // Debounce window resize events
     
     window.addEventListener('resize', handleResize);
     
     return () => {
       window.removeEventListener('resize', handleResize);
+      handleResize.cancel(); // Cancel any pending debounce
     };
-  }, [drawCanvas]);
+  }, [requestCanvasUpdate]);
 
-  // Re-render the canvas when selectedLayers changes
+  // Update canvas when transform changes
   useEffect(() => {
-    console.log('[NftCanvas] selectedLayers changed, triggering redraw');
-    requestAnimationFrame(() => drawCanvas());
-  }, [selectedLayers, drawCanvas]);
+    requestCanvasUpdate();
+  }, [scale, offsetX, offsetY, requestCanvasUpdate]);
 
-  // Handle mouse events for panning
-  const handleMouseDown = (e) => {
+  // Handle mouse events for panning - memoized to prevent recreation
+  const handleMouseDown = useCallback((e) => {
     if (e.button !== 0) return; // Only left click
     setIsDragging(true);
     setStartX(e.clientX);
     setStartY(e.clientY);
-  };
+  }, []);
 
   const handleMouseMove = useCallback((e) => {
     if (!isDragging) return;
@@ -206,17 +255,17 @@ const NftCanvas = ({ width = 500, height = 500 }) => {
     setStartY(e.clientY);
   }, [isDragging, startX, startY]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
-  // Handle touch events for mobile
-  const handleTouchStart = (e) => {
+  // Handle touch events for mobile - memoized to prevent recreation
+  const handleTouchStart = useCallback((e) => {
     if (e.touches.length !== 1) return;
     setIsDragging(true);
     setStartX(e.touches[0].clientX);
     setStartY(e.touches[0].clientY);
-  };
+  }, []);
 
   const handleTouchMove = useCallback((e) => {
     if (!isDragging || e.touches.length !== 1) return;
@@ -230,183 +279,224 @@ const NftCanvas = ({ width = 500, height = 500 }) => {
     setStartY(e.touches[0].clientY);
   }, [isDragging, startX, startY]);
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
-  // Handle zoom
-  const handleZoomIn = () => {
+  // Handle zoom actions - memoize to prevent recreation
+  const handleZoomIn = useCallback(() => {
     setScale(prev => Math.min(prev * 1.2, 5));
-  };
+  }, []);
 
-  const handleZoomOut = () => {
+  const handleZoomOut = useCallback(() => {
     setScale(prev => Math.max(prev / 1.2, 0.5));
-  };
+  }, []);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setScale(1);
     setOffsetX(0);
     setOffsetY(0);
-  };
-
-  // Handle zoom with mouse wheel
-  const handleWheel = useCallback((e) => {
-    e.preventDefault();
-    const delta = -Math.sign(e.deltaY);
-    const factor = delta > 0 ? 1.1 : 0.9;
-    setScale(prev => Math.max(0.5, Math.min(5, prev * factor)));
   }, []);
 
+  const handleZoomChange = useCallback((e, newValue) => {
+    setScale(newValue);
+  }, []);
+
+  // Register mouse/touch event listeners with proper cleanup
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas) {
-      canvas.addEventListener('wheel', handleWheel, { passive: false });
-      return () => {
-        canvas.removeEventListener('wheel', handleWheel);
-      };
+    if (!canvas) return;
+    
+    // Add event listeners
+    canvas.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleTouchEnd);
+    
+    // Cleanup event listeners on unmount
+    return () => {
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      canvas.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [
+    handleMouseDown, 
+    handleMouseMove, 
+    handleMouseUp,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd
+  ]);
+
+  // Memoize UI components to prevent re-creation
+  const zoomControls = useMemo(() => (
+    <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+      <IconButton onClick={handleZoomOut} size="small">
+        <ZoomOutIcon />
+      </IconButton>
+      
+      <Slider
+        value={scale}
+        min={0.5}
+        max={5}
+        step={0.1}
+        onChange={handleZoomChange}
+        sx={{ mx: 2, width: '100px' }}
+      />
+      
+      <IconButton onClick={handleZoomIn} size="small">
+        <ZoomInIcon />
+      </IconButton>
+      
+      <IconButton onClick={handleReset} size="small" sx={{ ml: 1 }}>
+        <RestartAltIcon />
+      </IconButton>
+    </Box>
+  ), [scale, handleZoomChange, handleZoomIn, handleZoomOut, handleReset]);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Check if Ctrl key is pressed along with S or E
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 's') {
+          e.preventDefault(); // Prevent browser's save dialog
+          // Save functionality
+          handleSave();
+        } else if (e.key === 'e') {
+          e.preventDefault(); // Prevent default browser behavior
+          // Export functionality - simulate click on export button
+          const exportButton = document.querySelector('button[data-export-button="true"]');
+          if (exportButton) exportButton.click();
+        }
+      }
+    };
+
+    // Add event listener for keyboard shortcuts
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Clean up event listener on unmount
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []); // Empty dependency array means this effect runs once on mount
+
+  // Save functionality
+  const handleSave = () => {
+    // In a real implementation, this would save the current state
+    // For now, just show a success notification
+    
+    // Check if we have layers to save
+    const hasLayers = Object.keys(selectedLayers).length > 0;
+    
+    if (hasLayers) {
+      // Show save notification
+      setSaveNotification({ 
+        open: true, 
+        message: 'Saved!', 
+        severity: 'success' 
+      });
+      
+      // In a real implementation, you would call a save function here
+      console.log('Canvas state saved');
+    } else {
+      // Show error if no layers to save
+      setSaveNotification({ 
+        open: true, 
+        message: 'Nothing to save! Add layers first.', 
+        severity: 'warning' 
+      });
     }
-  }, [handleWheel]);
+  };
 
-  // Removed the problematic useEffect that was causing infinite renders
-  // by duplicating the drawCanvas call
-
-  const hasLayers = Object.keys(selectedLayers).length > 0;
+  const handleNotificationClose = () => {
+    setSaveNotification({ ...saveNotification, open: false });
+  };
 
   return (
-    <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">
-          NFT Preview
-        </Typography>
-        <ExportButton canvasRef={canvasRef} />
-      </Box>
+    <Box sx={{ textAlign: 'center' }}>
+      <Typography variant="h6" gutterBottom>
+        NFT Preview
+      </Typography>
       
-      <Divider sx={{ mb: 2 }} />
-      
-      <Box sx={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Box
-          sx={{
-            position: 'relative',
-            width: '100%',
-            aspectRatio: '1',
-            maxWidth: width,
-            maxHeight: height,
-            margin: '0 auto',
-            bgcolor: '#f0f0f0',
-            border: '1px solid #ddd',
-            borderRadius: 1,
-            overflow: 'hidden',
-            cursor: isDragging ? 'grabbing' : 'grab',
-            touchAction: 'none', // Prevent browser handling of touch events
-          }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <canvas
-            ref={canvasRef}
-            width={width}
-            height={height}
-            style={{
-              width: '100%', 
-              height: '100%',
-              objectFit: 'contain'
-            }}
-          />
-          
-          {isLoading && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'rgba(255, 255, 255, 0.7)',
-                zIndex: 2
-              }}
-            >
-              <Box sx={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid #f0f0f0', borderTop: '3px solid #3f51b5', animation: 'spin 1s linear infinite' }} />
-            </Box>
-          )}
-          
-          {error && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'rgba(255, 233, 233, 0.8)',
-                zIndex: 2,
-                p: 2
-              }}
-            >
-              <Typography color="error" align="center">
-                {error}
-              </Typography>
-            </Box>
-          )}
-          
-          {!hasLayers && !isLoading && !error && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'rgba(245, 245, 245, 0.8)',
-                zIndex: 2,
-              }}
-            >
-              <Typography color="text.secondary" align="center" sx={{ p: 2 }}>
-                Select traits from the layer manager to preview your NFT
-              </Typography>
-            </Box>
-          )}
-        </Box>
+      <Paper 
+        elevation={2} 
+        sx={{ 
+          p: 1, 
+          mb: 2,
+          position: 'relative',
+          width: width,
+          height: height,
+          margin: '0 auto',
+          overflow: 'hidden',
+          backgroundColor: '#f5f5f5'
+        }}
+      >
+        {isLoading && (
+          <div className="canvas-loading-overlay">
+            <div className="canvas-loading-spinner"></div>
+          </div>
+        )}
         
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 2 }}>
-          <IconButton onClick={handleZoomOut} disabled={scale <= 0.5}>
-            <ZoomOutIcon />
-          </IconButton>
-          
-          <Slider
-            sx={{ mx: 2, width: '150px' }}
-            min={0.5}
-            max={5}
-            step={0.1}
-            value={scale}
-            onChange={(_, value) => setScale(value)}
-            aria-label="Zoom"
-          />
-          
-          <IconButton onClick={handleZoomIn} disabled={scale >= 5}>
-            <ZoomInIcon />
-          </IconButton>
-          
-          <IconButton onClick={handleReset} sx={{ ml: 1 }}>
-            <RestartAltIcon />
-          </IconButton>
-        </Box>
+        <canvas
+          ref={canvasRef}
+          width={width}
+          height={height}
+          style={{
+            cursor: isDragging ? 'grabbing' : 'grab',
+            touchAction: 'none'
+          }}
+        />
+        
+        {error && (
+          <Box 
+            sx={{ 
+              position: 'absolute', 
+              bottom: 10, 
+              left: 10, 
+              right: 10,
+              p: 1,
+              bgcolor: 'error.light',
+              color: 'error.contrastText',
+              borderRadius: 1
+            }}
+          >
+            {error}
+          </Box>
+        )}
+      </Paper>
+      
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <ExportButton canvasRef={canvasRef} />
+        {zoomControls}
       </Box>
-    </Paper>
+      
+      {/* Toast notification for save */}
+      <Snackbar
+        open={saveNotification.open}
+        autoHideDuration={3000}
+        onClose={handleNotificationClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleNotificationClose} 
+          severity={saveNotification.severity} 
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {saveNotification.message}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
-};
+});
 
-export default NftCanvas; 
+// Add displayName for better debugging
+NftCanvas.displayName = 'NftCanvas';
+
+export default React.memo(NftCanvas); 

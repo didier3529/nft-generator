@@ -1,0 +1,96 @@
+/* App.css - Main styles for Solana NFT Generator */
+
+.App {
+  text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 120px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.App-header h1 {
+  margin: 0 0 20px 0;
+}
+
+/* Network Selector Styles */
+.network-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+.network-selector label {
+  font-weight: 600;
+  margin-right: 5px;
+}
+
+.network-selector select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  background-color: #121212;
+  color: white;
+  border: 1px solid #444;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.network-selector select:hover {
+  border-color: #9945FF;
+}
+
+.network-selector select:focus {
+  border-color: #9945FF;
+  box-shadow: 0 0 0 2px rgba(153, 69, 255, 0.3);
+}
+
+/* Network Info Panel */
+.network-info {
+  background-color: #f5f7fa;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.network-info p {
+  margin: 10px 0;
+}
+
+.status-connected {
+  color: #00C853;
+  background-color: rgba(0, 200, 83, 0.1);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .App-header {
+    min-height: auto;
+    padding: 15px;
+  }
+  
+  .network-selector {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+} 
