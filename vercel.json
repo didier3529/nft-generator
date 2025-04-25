@@ -1,8 +1,8 @@
 {
   "version": 2,
   "buildCommand": "cd client && node setup-for-vercel.js && npm run build",
+  "installCommand": "cd client && npm install",
   "outputDirectory": "client/build",
-  "installCommand": "npm install",
   "rewrites": [
     {
       "source": "/api/:path*",
